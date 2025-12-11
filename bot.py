@@ -1,17 +1,22 @@
+
+import os
 import telebot
 
-# Your correct token with colon
-BOT_TOKEN = "8576578203:AAEap2cItQ5YcvbFMIV4qaS9_-cuXEH3064"
+# Get token from Render environment
+BOT_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+
+if not BOT_TOKEN:
+    raise ValueError("TELEGRAM_TOKEN is missing in Render!")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.reply_to(message, "👋 Welcome! The bot is running 24/7.")
+    bot.reply_to(message, "👋 Welcome! Bot is running safely.")
 
 @bot.message_handler(commands=['help'])
 def help(message):
-    bot.reply_to(message, "This is a 24/7 bot hosted on Render.")
+    bot.reply_to(message, "This bot is hosted on Render 24/7.")
 
-print("Bot is running...")
+print("Bot is running…")
 bot.polling()
