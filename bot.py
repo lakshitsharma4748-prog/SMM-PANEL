@@ -3,7 +3,7 @@ import telebot
 from flask import Flask, request, abort
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
-PUBLIC_URL = os.environ.get("PUBLIC_URL")  # https://your-service.onrender.com
+PUBLIC_URL = os.environ.get("PUBLIC_URL")  # e.g. https://your-service.onrender.com
 
 if not TOKEN:
     raise RuntimeError("TELEGRAM_TOKEN env var not set")
