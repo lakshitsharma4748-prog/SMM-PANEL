@@ -2,9 +2,8 @@ import os
 import telebot
 from flask import Flask, request, abort
 
-# Environment variables
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
-PUBLIC_URL = os.environ.get("PUBLIC_URL")  # e.g. https://your-service.onrender.com
+PUBLIC_URL = os.environ.get("PUBLIC_URL")  # https://your-service.onrender.com
 
 if not TOKEN:
     raise RuntimeError("TELEGRAM_TOKEN env var not set")
@@ -12,21 +11,14 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# --- Commands ---
 @bot.message_handler(commands=['start'])
 def cmd_start(message):
-    bot.reply_to(message, "👋 Welcome — bot is active (webhook). Use /services or /help.")
+    bot.reply_to(message, "👋 Welcome — bot is active (webhook). Use /help.")
 
 @bot.message_handler(commands=['help'])
 def cmd_help(message):
-    bot.reply_to(message, "Help: /services /order")
+    bot.reply_to(message, "Help: /start /help")
 
-# --- Example order handler (text) ---
-@bot.message_handler(func=lambda m: m.text and m.text.strip().upper().startswith("ORDER"))
-def handle_order_text(message):
-    bot.reply_to(message, "Order received — processing...")
-
-# --- Webhook endpoint ---
 @app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
     if request.headers.get("content-type") != "application/json":
@@ -36,7 +28,6 @@ def webhook():
     bot.process_new_updates([update])
     return "", 200
 
-# --- Set webhook on startup (optional but helpful) ---
 def set_webhook():
     if not PUBLIC_URL:
         print("PUBLIC_URL not set; skipping webhook registration.")
