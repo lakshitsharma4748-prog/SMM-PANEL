@@ -1,12 +1,13 @@
 import telebot
 
-BOT_TOKEN = "8576578203"
+# Your correct token with colon
+BOT_TOKEN = "8576578203:AAEap2cItQ5YcvbFMIV4qaS9_-cuXEH3064"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.reply_to(message, "👋 Welcome! The bot is running 24/7 on Render.")
+    bot.reply_to(message, "👋 Welcome! The bot is running 24/7.")
 
 @bot.message_handler(commands=['help'])
 def help(message):
