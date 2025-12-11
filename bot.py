@@ -1,22 +1,51 @@
-
 import os
 import telebot
+from flask import Flask, request, abort
 
-# Get token from Render environment
-BOT_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+# Environment variables
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+PUBLIC_URL = os.environ.get("PUBLIC_URL")  # e.g. https://your-service.onrender.com
 
-if not BOT_TOKEN:
-    raise ValueError("TELEGRAM_TOKEN is missing in Render!")
+if not TOKEN:
+    raise RuntimeError("TELEGRAM_TOKEN env var not set")
 
-bot = telebot.TeleBot(BOT_TOKEN)
+bot = telebot.TeleBot(TOKEN)
+app = Flask(__name__)
 
+# --- Commands ---
 @bot.message_handler(commands=['start'])
-def start(message):
-    bot.reply_to(message, "👋 Welcome! Bot is running safely.")
+def cmd_start(message):
+    bot.reply_to(message, "👋 Welcome — bot is active (webhook). Use /services or /help.")
 
 @bot.message_handler(commands=['help'])
-def help(message):
-    bot.reply_to(message, "This bot is hosted on Render 24/7.")
+def cmd_help(message):
+    bot.reply_to(message, "Help: /services /order")
 
-print("Bot is running…")
-bot.polling()
+# --- Example order handler (text) ---
+@bot.message_handler(func=lambda m: m.text and m.text.strip().upper().startswith("ORDER"))
+def handle_order_text(message):
+    bot.reply_to(message, "Order received — processing...")
+
+# --- Webhook endpoint ---
+@app.route(f"/{TOKEN}", methods=["POST"])
+def webhook():
+    if request.headers.get("content-type") != "application/json":
+        abort(403)
+    json_string = request.get_data().decode("utf-8")
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "", 200
+
+# --- Set webhook on startup (optional but helpful) ---
+def set_webhook():
+    if not PUBLIC_URL:
+        print("PUBLIC_URL not set; skipping webhook registration.")
+        return
+    webhook_url = f"{PUBLIC_URL}/{TOKEN}"
+    print("Setting webhook to:", webhook_url)
+    ok = bot.set_webhook(url=webhook_url)
+    print("set_webhook result:", ok)
+
+if __name__ == "__main__":
+    set_webhook()
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
